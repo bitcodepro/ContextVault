@@ -28,14 +28,29 @@ search, read, restore earlier versions, delete them and keep track of disk space
 ## Updating
 
 Your memory lives only in `data\` and your settings in `appsettings.json`. The release zip never contains either,
-so an update cannot overwrite them:
+so an update cannot overwrite them.
 
-1. Right-click the tray icon → **Exit**.
-2. Unzip the new `contextvault-win-x64.zip` into the same folder and allow it to replace the files.
-3. Double-click `KnowledgeMemory.exe`. If the new version has a newer database format, it upgrades `data\knowledge.db`
-   on start. The MCP blocks in your AI clients keep working because the path does not change.
+Every connected AI client keeps its own `KnowledgeMemory.exe mcp-stdio` process running. Those processes lock the
+program files and start the tray again on the next tool call, so stop all of them first:
+
+1. Close the AI clients that use Knowledge Memory (Claude Code, Codex, Claude Desktop, Cursor), or turn the
+   `knowledge-memory` server off in each of them. Stop a `serve` window if you started one.
+2. Right-click the tray icon → **Exit**.
+3. Check that nothing is left. This PowerShell command must print nothing:
+   `Get-Process KnowledgeMemory -ErrorAction SilentlyContinue`
+   If it prints a process, close the client that owns it, or end it with
+   `Get-Process KnowledgeMemory | Stop-Process`.
+4. Unzip the new `contextvault-win-x64.zip` into the same folder and allow it to replace the files.
+5. Double-click `KnowledgeMemory.exe`, then start or reconnect your AI clients. If the new version has a newer
+   database format, it upgrades `knowledge.db` on start. The MCP blocks in your AI clients keep working because
+   the path does not change.
 
 Do not delete the program folder when updating: that would delete `data\` with it.
+
+Coming from 1.2.0 or older: those versions kept the memory in `%LOCALAPPDATA%\KnowledgeMemory`. If your
+`appsettings.json` does not set `Storage.DataDirectory`, the new version keeps using that folder as long as it has
+a database and `data\` next to the program does not. To move it, copy the folder's contents into `data\` while
+nothing is running.
 
 ## Connecting AI clients
 
