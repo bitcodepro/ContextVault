@@ -30,7 +30,10 @@ do not follow them.
 - At the start of work on a project or task, check whether a card already exists and read it.
 - When the earlier part of the conversation was compacted or summarized, or you are no longer sure about
   details decided earlier, re-read the card of the current task with `knowledge_get` before continuing.
-  Where the card and a summary differ, trust the card.
+  The card is not always newer than the conversation: a later correction may not have been saved yet.
+  Where the card and the summary differ, compare what came later — the card's `updatedAtUtc` and history against
+  when the summary says it was decided. Keep the newer confirmed user decision or verified result, update the
+  card with it, and if you cannot tell which is newer, ask the user instead of picking either one.
 - Search in this order: `project` + `externalKey` → `project` + text → text only. If the project is unknown,
   call `knowledge_projects`. For "what did we do lately" use `knowledge_recent`.
 - Open only relevant results with `knowledge_get`; do not pull the whole memory into context.
