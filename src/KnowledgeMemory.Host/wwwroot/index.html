@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Knowledge Memory</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div id="gate" class="gate" hidden>
+    <div class="gate-card">
+      <h1>Knowledge Memory</h1>
+      <p id="gate-message"></p>
+      <pre id="gate-command" class="command" hidden></pre>
+      <button id="gate-retry" type="button" class="btn">Retry</button>
+    </div>
+  </div>
+
+  <div id="app" class="layout" hidden>
+    <nav class="sidebar" aria-label="Sections">
+      <div class="brand">Knowledge Memory</div>
+      <ul class="nav-list">
+        <li><button type="button" class="nav-item" data-nav="all">All knowledge <span class="count" id="nav-all-count"></span></button></li>
+      </ul>
+      <div class="nav-heading" id="projects-heading">Projects</div>
+      <ul class="nav-list" id="project-list" aria-labelledby="projects-heading"></ul>
+      <ul class="nav-list nav-bottom">
+        <li><button type="button" class="nav-item" data-nav="disk">Disk manager</button></li>
+      </ul>
+    </nav>
+
+    <main class="main" id="main">
+      <section id="view-list" aria-label="Knowledge">
+        <form class="toolbar" id="search-form" role="search">
+          <label class="visually-hidden" for="q">Search</label>
+          <input id="q" type="search" placeholder="Search: task number, key or words" autocomplete="off" maxlength="500">
+          <label class="visually-hidden" for="kind">Type</label>
+          <select id="kind">
+            <option value="">All types</option>
+            <option value="task">Tasks</option>
+            <option value="decision">Decisions</option>
+            <option value="reference">Reference</option>
+            <option value="preference">Preferences</option>
+          </select>
+          <label class="visually-hidden" for="status">Status</label>
+          <select id="status">
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="superseded">Superseded</option>
+          </select>
+        </form>
+        <div class="list-head">
+          <h1 id="list-title">All knowledge</h1>
+          <span id="result-count" class="muted" aria-live="polite"></span>
+        </div>
+        <div id="list-state" class="state" role="status" hidden></div>
+        <ul id="results" class="results" aria-label="Results"></ul>
+        <button id="more" type="button" class="btn btn-secondary more" hidden>Show more</button>
+      </section>
+
+      <section id="view-disk" aria-labelledby="disk-title" hidden>
+        <div class="list-head"><h1 id="disk-title">Disk manager</h1></div>
+        <div id="disk-state" class="state" role="status" hidden></div>
+        <div id="disk-body" hidden>
+          <dl class="stats" id="disk-stats"></dl>
+          <p class="muted small">"Reclaimable" is an estimate from SQLite free pages (freelist × page size), not a promise. Deleting a short entry does not necessarily shrink the file right away.</p>
+          <h2>Maintenance</h2>
+          <dl class="stats" id="disk-maint"></dl>
+          <div class="actions">
+            <button type="button" class="btn" id="btn-compact">Reclaim space</button>
+            <button type="button" class="btn btn-secondary" id="btn-backup">Create backup</button>
+            <a class="btn btn-secondary" id="btn-export-json" href="/api/export?format=json" download>Export JSON</a>
+            <a class="btn btn-secondary" id="btn-export-md" href="/api/export?format=md" download>Export Markdown</a>
+          </div>
+          <div id="disk-result" class="result-box" role="status" aria-live="polite" hidden></div>
+          <p class="muted small">Compaction is not guaranteed secure erasure on SSDs, in OS snapshots or in backups. Backups are kept in the data folder (backups) and are never deleted automatically.</p>
+        </div>
+      </section>
+    </main>
+
+    <aside id="detail" class="detail" aria-labelledby="detail-title" hidden>
+      <div class="detail-head">
+        <div>
+          <div id="detail-key" class="key"></div>
+          <h2 id="detail-title"></h2>
+        </div>
+        <button type="button" class="icon-btn" id="detail-close" aria-label="Close card">✕</button>
+      </div>
+      <div id="detail-state" class="state" role="status" hidden></div>
+      <div id="detail-body">
+        <div id="version-banner" class="version-banner" role="status" hidden></div>
+        <div id="detail-badges" class="badges"></div>
+        <p id="detail-summary" class="summary"></p>
+        <div id="detail-content" class="content"></div>
+        <p id="detail-truncated" class="muted small" hidden></p>
+        <h3>Sources</h3>
+        <ul id="detail-sources" class="sources"></ul>
+        <h3>Metadata</h3>
+        <dl id="detail-meta" class="meta"></dl>
+        <h3>History</h3>
+        <div id="detail-history"></div>
+        <div class="actions">
+          <button type="button" class="btn btn-danger" id="detail-delete">Delete…</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <dialog id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-desc">
+    <form method="dialog" id="delete-form">
+      <h2 id="delete-title">Delete this card?</h2>
+      <dl class="meta" id="delete-what"></dl>
+      <div id="delete-desc">
+        <p>The card and its search index entries will be removed from the working database. There is no trash — it can only be restored from an earlier backup.</p>
+        <p class="muted small">Existing backups and exports are not changed.</p>
+      </div>
+      <p id="delete-error" class="error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="button" class="btn btn-secondary" id="delete-cancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="delete-confirm">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

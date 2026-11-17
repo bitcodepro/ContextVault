@@ -1,0 +1,86 @@
+name: Windows
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows build and tests
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.nuget/packages
+          key: windows-nuget-${{ hashFiles('global.json', '**/*.csproj') }}
+      - name: Restore
+        run: dotnet restore KnowledgeMemory.sln
+      - name: Determine version
+        id: version
+        shell: pwsh
+        run: |
+          $count = [int](git rev-list --first-parent --count HEAD)
+          if ($LASTEXITCODE -ne 0 -or $count -lt 1) { throw 'Cannot determine commit count' }
+          $version = "1.2.$($count - 1)"
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - name: Build
+        run: dotnet build KnowledgeMemory.sln -c Release --no-restore -p:Version=${{ steps.version.outputs.version }}
+      - name: Test
+        run: dotnet test KnowledgeMemory.sln -c Release --no-build --logger trx --results-directory TestResults
+      - name: Package Windows x64
+        shell: pwsh
+        run: ./scripts/ci-package.ps1 -Version '${{ steps.version.outputs.version }}'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: contextvault-win-x64-${{ github.sha }}-${{ github.run_attempt }}
+          path: artifacts/release/*
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: failure()
+        with:
+          name: windows-test-results-${{ github.run_id }}-${{ github.run_attempt }}
+          path: TestResults
+          retention-days: 7
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      artifact: contextvault-win-x64-${{ github.sha }}-${{ github.run_attempt }}
+
+  release:
+    name: Publish Windows release
+    needs: windows
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: windows-2022
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: contextvault-release
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.windows.outputs.artifact }}
+          path: artifacts/release
+      - name: Publish verified release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ needs.windows.outputs.version }}
+        run: ./scripts/ci-release.ps1 -Version $env:RELEASE_VERSION -Commit $env:GITHUB_SHA
