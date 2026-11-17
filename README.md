@@ -211,8 +211,10 @@ gets short results and reads the full card with a separate call. If the number e
 projects, the AI should ask which project. "What did we save this week?" — the AI calls `knowledge_recent`.
 
 MCP provides tools, not chat monitoring: the server does not see the conversation history and saves nothing on its own.
-Saving happens only when you ask and the client calls `knowledge_save`. If the beginning of a long
-discussion has already left the model's context, only what is still available can be saved — make checkpoints after major decisions.
+Saving happens when the AI calls `knowledge_save`: when you ask, and, with the recommended
+[instructions](docs/agent-instructions.md), on the AI's own judgment as soon as something worth keeping appears
+(a decision, a verified result, a root cause). Each such save is reported in one line, and you can tell the AI to stop.
+What already left the model's context before it was saved cannot be recovered, so name the project and task at the start.
 
 ## Web UI
 
