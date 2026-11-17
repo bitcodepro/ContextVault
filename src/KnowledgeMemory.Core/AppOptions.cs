@@ -17,7 +17,17 @@ public sealed class ServerOptions
 
 public sealed class StorageOptions
 {
-    public string DataDirectory { get; set; } = "%LOCALAPPDATA%\\KnowledgeMemory";
+    public const string PortableDefault = "data"; // next to appsettings.json, i.e. next to the program
+    private string _dataDirectory = PortableDefault;
+
+    public string DataDirectory
+    {
+        get => _dataDirectory;
+        set { _dataDirectory = value; DataDirectorySet = true; }
+    }
+
+    /// <summary>True when the config file names a data folder; false when it relies on the default.</summary>
+    [JsonIgnore] public bool DataDirectorySet { get; private set; }
     public int BusyTimeoutSeconds { get; set; } = 5;
     public bool AutoReclaimAfterDelete { get; set; } = true;
     public int MaintenanceDelaySeconds { get; set; } = 5;
@@ -108,7 +118,25 @@ public static class ConfigLoader
 
         Validate(options);
         options.ResolvedDataDirectory = ResolveDataDirectory(options.Storage.DataDirectory, baseDir);
+        if (!options.Storage.DataDirectorySet)
+            options.ResolvedDataDirectory = KeepLegacyData(options.ResolvedDataDirectory);
         return options;
+    }
+
+    /// <summary>Default data folder of versions up to 1.2.0 (before the data moved next to the program).</summary>
+    public static string LegacyDataDirectory { get; set; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KnowledgeMemory");
+
+    /// <summary>
+    /// A config written for 1.2.0 or older that does not name a data folder used %LOCALAPPDATA%\KnowledgeMemory.
+    /// Keep using that memory after an update instead of opening a new empty database next to the program.
+    /// </summary>
+    private static string KeepLegacyData(string portable)
+    {
+        const string db = "knowledge.db";
+        if (File.Exists(Path.Combine(portable, db))) return portable;
+        var legacy = Path.GetFullPath(LegacyDataDirectory);
+        return File.Exists(Path.Combine(legacy, db)) ? legacy : portable;
     }
 
     public static void Validate(AppOptions o)

@@ -75,7 +75,7 @@ public sealed class DiskTests(ITestOutputHelper output) : IDisposable
         output.WriteLine($"initial={initial:N0} before={r.BytesBefore:N0} after={r.BytesAfter:N0} {r.DurationMs}ms");
         Assert.Equal("ok", r.Status);
         Assert.True(r.BytesAfter < initial / 10, $"{r.BytesAfter} should be far below {initial}");
-        Assert.Equal(r.BytesAfter, _t.Disk.WorkingBytes());
+        Assert.True(_t.Disk.WorkingBytes() <= r.BytesAfter); // background maintenance may shrink it further
         Assert.Equal("incremental", _t.Disk.GetStats().AutoVacuum); // VACUUM keeps the mode
     }
 

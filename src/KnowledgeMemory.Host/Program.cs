@@ -29,10 +29,12 @@ namespace KnowledgeMemory.Host
 
         public static async Task<int> RunAsync(string[] args)
         {
-            if (args.Length == 0 || args[0] is "-h" or "--help" or "help")
+            // Double-click in Explorer (no arguments) starts the tray app.
+            if (args.Length == 0) args = ["tray"];
+            if (args[0] is "-h" or "--help" or "help")
             {
                 Console.Error.WriteLine(Usage);
-                return args.Length == 0 ? 2 : 0;
+                return 0;
             }
             if (args[0] == "--version")
             {
