@@ -17,7 +17,7 @@ public sealed class ServerOptions
 
 public sealed class StorageOptions
 {
-    public string DataDirectory { get; set; } = "%LOCALAPPDATA%\\KnowledgeMemory";
+    public string DataDirectory { get; set; } = "data"; // next to appsettings.json, i.e. next to the program
     public int BusyTimeoutSeconds { get; set; } = 5;
     public bool AutoReclaimAfterDelete { get; set; } = true;
     public int MaintenanceDelaySeconds { get; set; } = 5;

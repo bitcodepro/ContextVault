@@ -12,7 +12,7 @@ in this file and keeps everything else (comments in the file are not preserved).
 | `Server.OpenBrowserOnStart` | `false` | Open the UI (with a one-time link) after startup. |
 | `Server.AutoStart` | `true` | `mcp-stdio` starts the tray app (which runs the service) in the background when the service does not answer, waits up to 20 s and retries the call once. It keeps running after the adapter exits. Before that, the adapter re-reads the config, so a port changed in the tray settings is picked up without restarting the AI client. |
 | `Server.StartWithWindows` | `false` | Start the tray app when the user signs in to Windows. Applied when the tray starts, when Settings are saved and by `autostart on|off` (entry `KnowledgeMemory` in HKCU\...\CurrentVersion\Run). |
-| `Storage.DataDirectory` | `%LOCALAPPDATA%\KnowledgeMemory` | Folder for the database, token, backups and exports. `%VAR%` is expanded explicitly; a relative path is resolved against the config file's folder. UNC paths (`\\server\share`) are not allowed. |
+| `Storage.DataDirectory` | `data` (next to the program) | Folder for the database, token, backups and exports. `%VAR%` is expanded explicitly; a relative path is resolved against the config file's folder. UNC paths (`\\server\share`) are not allowed. |
 | `Storage.BusyTimeoutSeconds` | `5` | How long to wait for a busy database (SQLite busy timeout). A write waits at most `max(10, 4×value)` seconds, then returns `busy`. |
 | `Storage.AutoReclaimAfterDelete` | `true` | Run background space reclaim after deletes. |
 | `Storage.MaintenanceDelaySeconds` | `5` | Delay before background maintenance: deletes close together are merged into one run. |

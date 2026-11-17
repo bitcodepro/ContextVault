@@ -20,10 +20,22 @@ search, read, restore earlier versions, delete them and keep track of disk space
 1. Unzip `contextvault-win-x64.zip` into `C:\Tools\KnowledgeMemory`.
    The build is self-contained: you do not need to install .NET.
    (Another folder works too — then replace `C:\Tools\KnowledgeMemory` in every block below.)
-2. Copy `appsettings.example.json` to `appsettings.json` in the same folder. The defaults are fine:
-   port `47831`, data in `%LOCALAPPDATA%\KnowledgeMemory`. All settings are in [docs/configuration.md](docs/configuration.md).
+2. Double-click `KnowledgeMemory.exe`: the blue **K** icon appears in the tray. On first start the program creates
+   `appsettings.json` (port `47831`) and the `data` folder next to itself. All settings are in [docs/configuration.md](docs/configuration.md).
 3. Connect your AI client with one of the ready blocks below. That is all: the first tool call starts the service
    with its tray icon. Optional: `KnowledgeMemory.exe autostart on` (or the checkbox in the tray Settings) to start it with Windows.
+
+## Updating
+
+Your memory lives only in `data\` and your settings in `appsettings.json`. The release zip never contains either,
+so an update cannot overwrite them:
+
+1. Right-click the tray icon → **Exit**.
+2. Unzip the new `contextvault-win-x64.zip` into the same folder and allow it to replace the files.
+3. Double-click `KnowledgeMemory.exe`. If the new version has a newer database format, it upgrades `data\knowledge.db`
+   on start. The MCP blocks in your AI clients keep working because the path does not change.
+
+Do not delete the program folder when updating: that would delete `data\` with it.
 
 ## Connecting AI clients
 
@@ -112,7 +124,7 @@ Approval of tool calls is set in Cursor's own settings (auto-run), not in this f
 ### HTTP MCP (other clients)
 
 Streamable HTTP, stateless: `http://127.0.0.1:47831/mcp` with the header
-`Authorization: Bearer <contents of %LOCALAPPDATA%\KnowledgeMemory\secrets\api-token>`.
+`Authorization: Bearer <contents of data\secrets\api-token next to the program>`.
 Use it only with clients that store headers locally; stdio is preferred. Over HTTP `serve` must already be running.
 
 ### Instructions for the AI
