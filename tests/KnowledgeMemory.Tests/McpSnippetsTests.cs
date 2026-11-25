@@ -46,6 +46,19 @@ public sealed class McpSnippetsTests
     }
 
     [Fact]
+    public void Instructions_are_one_paste_with_the_setup_request_the_rules_and_the_real_exe_path()
+    {
+        var text = Get("Instructions for the AI").Text;
+        Assert.StartsWith("This is an MCP server for global memory.", text);
+        Assert.Contains("whenever we switch between tasks", text);
+        Assert.Contains("## Knowledge Memory", text);
+        Assert.Contains("### After saving", text);
+        Assert.EndsWith(Get("Codex").Text, text);
+        Assert.Contains(@"command = ""C:\\Program Files\\Knowledge Memory\\KnowledgeMemory.exe""", text);
+        Assert.DoesNotContain("{{", text);
+    }
+
+    [Fact]
     public void A_config_outside_the_program_folder_is_passed_explicitly()
     {
         var other = McpSnippets.All(Exe, @"D:\km\appsettings.json").Single(s => s.Menu == "Codex").Text;
