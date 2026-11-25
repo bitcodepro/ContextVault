@@ -31,6 +31,8 @@
   <ItemGroup>
     <Content Update="wwwroot\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Update="appsettings.example.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- Tray "Instructions for the AI" copies this block; built in so it never depends on the docs folder. -->
+    <EmbeddedResource Include="..\..\docs\agent-instructions.md" LogicalName="agent-instructions.md" />
   </ItemGroup>
 
 </Project>

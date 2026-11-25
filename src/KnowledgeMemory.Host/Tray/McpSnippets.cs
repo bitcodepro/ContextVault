@@ -57,23 +57,30 @@ public static class McpSnippets
                 @"Paste at the end of %USERPROFILE%\.codex\config.toml and restart Codex."),
             new("Claude Desktop / Cursor", desktop,
                 @"Claude Desktop: %APPDATA%\Claude\claude_desktop_config.json. Cursor: %USERPROFILE%\.cursor\mcp.json. If ""mcpServers"" exists, add only the ""knowledge-memory"" entry."),
-            new("Instructions for the AI", AgentInstructions(),
-                "Paste into CLAUDE.md, AGENTS.md or the client's custom instructions."),
+            new("Instructions for the AI", SetupPrompt + "\n\n" + AgentInstructions() + "\n\n" + codex,
+                "Paste it into the AI chat: the AI adds the server and saves the rules. Or paste it into CLAUDE.md, AGENTS.md or the client's custom instructions."),
         ];
     }
+
+    /// <summary>First lines of "Instructions for the AI": asks the AI to install the server and keep the rules.</summary>
+    public const string SetupPrompt =
+        "This is an MCP server for global memory. Add it to your global configuration and save this rule.\n" +
+        "Let's add another rule: whenever we switch between tasks, save any important context, decisions, and progress " +
+        "so nothing gets lost when we return to a task later.";
 
     private static string Quote(string s) => s.Contains(' ') || s.Contains('\\') ? $"\"{s}\"" : s;
 
     /// <summary>TOML basic string: "C:\\Tools\\KnowledgeMemory.exe" (same escaping as JSON for paths).</summary>
     private static string Toml(string s) => JsonSerializer.Serialize(s, new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
 
-    /// <summary>The block between the two '---' lines of docs/agent-instructions.md shipped next to the program.</summary>
+    /// <summary>The block between the two '---' lines of docs/agent-instructions.md (built into the program).</summary>
     public static string AgentInstructions()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "docs", "agent-instructions.md");
-        if (File.Exists(path))
+        using var stream = typeof(McpSnippets).Assembly.GetManifestResourceStream("agent-instructions.md");
+        if (stream is not null)
         {
-            var lines = File.ReadAllLines(path);
+            using var reader = new StreamReader(stream);
+            var lines = reader.ReadToEnd().Replace("\r\n", "\n").Split('\n');
             var marks = lines.Select((l, i) => (l, i)).Where(x => x.l.Trim() == "---").Select(x => x.i).Take(2).ToArray();
             if (marks.Length == 2) return string.Join("\n", lines[(marks[0] + 1)..marks[1]]).Trim();
         }

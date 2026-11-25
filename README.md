@@ -144,7 +144,10 @@ Use it only with clients that store headers locally; stdio is preferred. Over HT
 
 ### Instructions for the AI
 
-Add the block from [docs/agent-instructions.md](docs/agent-instructions.md) to the client's instructions
+Tray → **Copy MCP settings → Instructions for the AI** copies one ready prompt: a request to add the server
+and keep the rules (including "save context and progress whenever we switch tasks"), the full rules below, and
+the Codex server block with the real path to `KnowledgeMemory.exe`. Paste it into the AI chat, and the AI sets
+itself up. Or add the block from [docs/agent-instructions.md](docs/agent-instructions.md) to the client's instructions
 (`CLAUDE.md`, `AGENTS.md`, custom instructions): when to search, how to select what matters, how to update a
 card without losing data.
 
